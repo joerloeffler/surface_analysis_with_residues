@@ -211,7 +211,17 @@ def main(argv=None):
             raise RuntimeError("CDR Annotation failed")
     else:
         cdrs = []
-    residues = np.array([str(a.residue) for a in pdb.top.atoms])
+    with open(args.pdb, 'r') as f:
+        for line in f:
+            if line.startswith('ATOM') or line.startswith('HETATM'):
+                res_name = line[17:20].strip()        # e.g., "TYR"
+                res_seq = line[22:26].strip()         # e.g., "100"
+                insertion_code = line[26].strip()     # e.g., "A"
+
+                full_id = f"{res_name}{res_seq}{insertion_code}"
+                residues_list.append(full_id)
+
+    residues = np.array(residues_list)
     chain_ids = np.array([a.residue.chain.chain_id for a in pdb.top.atoms]) ### added chain information here
 
     pdbtree = cKDTree(pdb.xyz[0] * 10.)
